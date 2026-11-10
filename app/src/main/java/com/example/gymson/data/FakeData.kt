@@ -29,10 +29,7 @@ object FakeData {
             equipment = "body only",
             category = "strength",
             primaryMuscles = listOf("chest"),
-            instructions = listOf(
-                "Lie on the floor face down and place your hands about 36 inches apart.",
-                "Push your body up using your chest and arms, then lower yourself slowly."
-            ),
+            instructions = listOf("Start in plank position.", "Lower your chest and push back up."),
             images = listOf("Pushups/0.jpg", "Pushups/1.jpg")
         ),
         Ejercicio(
