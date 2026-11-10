@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.gymson.ui.catalogo.CatalogoScreen
 
 @Composable
 fun NavGraph(
@@ -18,7 +19,7 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        Rutas.CATALOGO,
         modifier = modifier
     ) {
         //Cada etapa va a reemplazar el Placeholder por su pantalla real
@@ -26,11 +27,10 @@ fun NavGraph(
         composable(Rutas.RUTINA) { Placeholder("Rutina") }        // Etapa 3
         composable(Rutas.SESION) { Placeholder("Sesión") }        // Etapas 4 y 5
         composable(Rutas.HISTORIAL) { Placeholder("Historial") }  // Etapa 5
+        composable(Rutas.CATALOGO) { CatalogoScreen() }
         // composable(Rutas.CATALOGO) { ... }                     // Etapa 1
     }
 }
-
-//Pantalla provisional: solo muestra el nombre de la pantalla en el centro
 @Composable
 private fun Placeholder(nombre: String) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
