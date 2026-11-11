@@ -10,6 +10,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.gymson.ui.catalogo.CatalogoScreen
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.gymson.ui.perfil.PerfilScreen
 
 @Composable
 fun NavGraph(
@@ -19,11 +21,22 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        Rutas.CATALOGO,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         //Cada etapa va a reemplazar el Placeholder por su pantalla real
-        composable(Rutas.PERFIL) { Placeholder("Perfil") }        // Etapa 2
+        composable(Rutas.PERFIL) {
+            PerfilScreen(
+                onGuardado = {
+                    // Mismo patrón que la barra inferior: evita apilar pantallas repetidas
+                    navController.navigate(Rutas.RUTINA) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }       // Etapa 2
         composable(Rutas.RUTINA) { Placeholder("Rutina") }        // Etapa 3
         composable(Rutas.SESION) { Placeholder("Sesión") }        // Etapas 4 y 5
         composable(Rutas.HISTORIAL) { Placeholder("Historial") }  // Etapa 5
