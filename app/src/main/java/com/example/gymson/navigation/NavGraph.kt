@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.example.gymson.ui.catalogo.CatalogoScreen
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.gymson.ui.perfil.PerfilScreen
+import com.example.gymson.ui.rutina.RutinaScreen
 
 @Composable
 fun NavGraph(
@@ -26,18 +27,14 @@ fun NavGraph(
     ) {
         //Cada etapa va a reemplazar el Placeholder por su pantalla real
         composable(Rutas.PERFIL) {
-            PerfilScreen(
-                onGuardado = {
-                    // Mismo patrón que la barra inferior: evita apilar pantallas repetidas
-                    navController.navigate(Rutas.RUTINA) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+            PerfilScreen(onGuardado = { navController.navegarEnBarra(Rutas.RUTINA) })
+        }
+        composable(Rutas.RUTINA) {
+            RutinaScreen(
+                onComenzar = { navController.navigate(Rutas.SESION) },
+                onIrAPerfil = { navController.navegarEnBarra(Rutas.PERFIL) }
             )
-        }       // Etapa 2
-        composable(Rutas.RUTINA) { Placeholder("Rutina") }        // Etapa 3
+        }
         composable(Rutas.SESION) { Placeholder("Sesión") }        // Etapas 4 y 5
         composable(Rutas.HISTORIAL) { Placeholder("Historial") }  // Etapa 5
         composable(Rutas.CATALOGO) { CatalogoScreen() }
@@ -48,5 +45,14 @@ fun NavGraph(
 private fun Placeholder(nombre: String) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(nombre)
+    }
+}
+
+//Misma navegación que la barra inferior: evita apilar pantallas repetidas
+private fun NavHostController.navegarEnBarra(ruta: String) {
+    navigate(ruta) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
