@@ -13,6 +13,7 @@ import com.example.gymson.ui.catalogo.CatalogoScreen
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.gymson.ui.perfil.PerfilScreen
 import com.example.gymson.ui.rutina.RutinaScreen
+import com.example.gymson.ui.sesion.SesionScreen
 
 @Composable
 fun NavGraph(
@@ -35,7 +36,9 @@ fun NavGraph(
                 onIrAPerfil = { navController.navegarEnBarra(Rutas.PERFIL) }
             )
         }
-        composable(Rutas.SESION) { Placeholder("Sesión") }        // Etapas 4 y 5
+        composable(Rutas.SESION) {
+            SesionScreen(onTerminar = { navController.popBackStack() })
+        }
         composable(Rutas.HISTORIAL) { Placeholder("Historial") }  // Etapa 5
         composable(Rutas.CATALOGO) { CatalogoScreen() }
         // composable(Rutas.CATALOGO) { ... }                     // Etapa 1
