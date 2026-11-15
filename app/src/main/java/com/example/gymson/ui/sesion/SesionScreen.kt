@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -29,24 +30,48 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.gymson.data.FakeData.rutinaDemo
+import com.example.gymson.ui.components.RegistroSerieForm
 import com.example.gymson.ui.theme.EntrenamientoPersonalTheme
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 
 @Composable
 fun SesionScreen(
     onTerminar: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SesionViewModel = viewModel(),
-    registroContent: @Composable () -> Unit = {} // hueco para la Etapa 5
+    viewModel: SesionViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var mostrarSalir by rememberSaveable { mutableStateOf(false) }
+
+// «Atrás» pide confirmación mientras hay una sesión en curso
+    BackHandler(enabled = uiState.rutina != null) { mostrarSalir = true }
+
+    if (mostrarSalir) {
+        AlertDialog(
+            onDismissRequest = { mostrarSalir = false },
+            title = { Text("¿Salir del entrenamiento?") },
+            text = { Text("Si sales ahora, la sesión no se guardará en el historial.") },
+            confirmButton = {
+                TextButton(onClick = { mostrarSalir = false; onTerminar() }) { Text("Salir") }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarSalir = false }) { Text("Continuar") }
+            }
+        )
+    }
     SesionContent(
         uiState = uiState,
         onIniciarDescanso = viewModel::iniciarDescanso,
         onSaltarDescanso = viewModel::saltarDescanso,
+        onRegistrar = viewModel::registrarSerie,
         onAvanzar = { viewModel.avanzar(onTerminar) },
         onVolver = onTerminar,
-        modifier = modifier,
-        registroContent = registroContent
+        modifier = modifier
     )
 }
 
@@ -55,10 +80,10 @@ fun SesionContent(
     uiState: SesionUiState,
     onIniciarDescanso: () -> Unit,
     onSaltarDescanso: () -> Unit,
+    onRegistrar: (repeticiones: Int, cargaKg: Float) -> Unit,
     onAvanzar: () -> Unit,
     onVolver: () -> Unit,
-    modifier: Modifier = Modifier,
-    registroContent: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val actual = uiState.ejercicioRutina
     if (actual == null) {
@@ -118,7 +143,17 @@ fun SesionContent(
                 descansoTotal = actual.descansoSegundos
             )
 
-            registroContent() // TODO Etapa 5: RegistroSerieForm
+            // key(...): al cambiar de serie o de ejercicio se crea un formulario nuevo
+            // y los campos se reinician con los valores de esa serie
+            key(uiState.indiceEjercicio, uiState.serieActual) {
+                RegistroSerieForm(
+                    repsIniciales = actual.repeticiones,
+                    cargaInicial = uiState.cargaSugerida,
+                    registrada = uiState.serieRegistrada,
+                    onRegistrar = onRegistrar,
+                    etiquetaReps = if (ejercicio.category == "stretching") "Segundos" else "Repeticiones"
+                )
+            }
 
             Text("Instrucciones", style = MaterialTheme.typography.titleMedium)
             ejercicio.instructions.forEachIndexed { i, paso ->
@@ -184,7 +219,8 @@ private fun SesionPreview() {
     EntrenamientoPersonalTheme {
         SesionContent(
             uiState = SesionUiState(rutina = rutinaDemo),
-            onIniciarDescanso = {}, onSaltarDescanso = {}, onAvanzar = {}, onVolver = {}
+            onIniciarDescanso = {}, onSaltarDescanso = {}, onRegistrar = { _, _ -> },
+            onAvanzar = {}, onVolver = {}
         )
     }
 }
@@ -195,7 +231,8 @@ private fun SesionDescansandoPreview() {
     EntrenamientoPersonalTheme {
         SesionContent(
             uiState = SesionUiState(rutina = rutinaDemo, descansando = true, descansoRestante = 45),
-            onIniciarDescanso = {}, onSaltarDescanso = {}, onAvanzar = {}, onVolver = {}
+            onIniciarDescanso = {}, onSaltarDescanso = {}, onRegistrar = { _, _ -> },
+            onAvanzar = {}, onVolver = {}
         )
     }
 }

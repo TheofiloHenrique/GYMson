@@ -2,6 +2,7 @@ package com.example.gymson.data.repository
 
 import com.example.gymson.data.model.Ejercicio
 import com.example.gymson.data.remote.RetrofitClient
+import kotlinx.coroutines.CancellationException
 
 // Descarga el catálogo una sola vez y lo guarda en memoria (caché).
 object EjerciciosRepository {
@@ -14,5 +15,6 @@ object EjerciciosRepository {
 
         return runCatching { RetrofitClient.api.obtenerEjercicios() }
             .onSuccess { cache = it }
+            .onFailure { if (it is CancellationException) throw it }
     }
 }

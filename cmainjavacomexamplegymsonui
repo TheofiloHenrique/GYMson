@@ -1,0 +1,49 @@
+warning: in the working copy of 'app/src/androidTest/java/com/example/gymson/ExampleInstrumentedTest.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/AndroidManifest.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/Entrenamiento.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/MainActivity.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/FakeData.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/model/Ejercicio.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/model/PerfilUsuario.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/model/Registro.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/model/Rutina.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/remote/EjerciciosApi.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/remote/RetrofitClient.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/repository/EjerciciosRepository.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/repository/HistorialRepository.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/repository/PerfilRepository.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/data/repository/RutinaRepository.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/domain/GeneradorRutina.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/navigation/NavGraph.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/navigation/Rutas.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/catalogo/CatalogoScreen.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/catalogo/CatalogoViewModel.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/components/EstadoCarga.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/components/TarjetaEjercicio.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/perfil/PerfilScreen.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/perfil/PerfilViewModel.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/rutina/RutinaScreen.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/rutina/RutinaViewModel.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/sesion/SesionScreen.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/sesion/SesionViewModel.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/theme/Color.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/theme/Theme.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/example/gymson/ui/theme/Type.kt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/keepRules/rules.keep', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/drawable/ic_launcher_background.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/drawable/ic_launcher_foreground.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/mipmap-anydpi/ic_launcher.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/mipmap-anydpi/ic_launcher_round.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/values/colors.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/values/strings.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/values/themes.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/xml/backup_rules.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/xml/data_extraction_rules.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/test/java/com/example/gymson/ExampleUnitTest.kt', LF will be replaced by CRLF the next time Git touches it
+ .../main/java/com/example/gymson/Entrenamiento.kt  | 11 [32m+[m[31m---[m
+ .../gymson/data/repository/EjerciciosRepository.kt |  2 [32m+[m
+ .../java/com/example/gymson/navigation/NavGraph.kt | 18 [32m++[m[31m-----[m
+ .../com/example/gymson/ui/sesion/SesionScreen.kt   | 55 [32m+++++++++++++++[m[31m----[m
+ .../example/gymson/ui/sesion/SesionViewModel.kt    | 63 [32m+++++++++++++++++++++[m[31m-[m
+ app/src/main/res/values/themes.xml                 |  3 [32m+[m[31m-[m
+ 6 files changed, 115 insertions(+), 37 deletions(-)
