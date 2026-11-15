@@ -12,10 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -39,7 +38,7 @@ fun EntrenamientoApp() {
     val rutaActual = backStackEntry?.destination?.route
 
     //Decidida una sola vez al abrir: sin perfil -> perfil; con perfil -> rutina
-    val inicio = remember {
+    val inicio = rememberSaveable {
         if (PerfilRepository.perfil.value == null) Rutas.PERFIL else Rutas.RUTINA
     }
 
@@ -75,10 +74,4 @@ fun EntrenamientoApp() {
             modifier = Modifier.padding(innerPadding)
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun EntrenamientoAppPreview() {
-    EntrenamientoApp()
 }
