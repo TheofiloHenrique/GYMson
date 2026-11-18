@@ -2,11 +2,8 @@ package com.example.gymson.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-//Paleta base del template. Vamos a cambiarla por nuestros colores después (Etapa 6)
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val VerdeMarca = Color(0xFF0B6E63)
+val AzulMarino = Color(0xFF12355B)
+val Coral = Color(0xFFFF7A45)
+val TextoOscuro = Color(0xFF1B2A2F)
+val Menta = Color(0xFFD9F0EA)
