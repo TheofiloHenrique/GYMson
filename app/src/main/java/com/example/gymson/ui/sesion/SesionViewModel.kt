@@ -23,7 +23,8 @@ data class SesionUiState(
     val descansoRestante: Int = 0,
     val descansando: Boolean = false,
     val descansoTerminado: Boolean = false,
-    val registros: List<RegistroSerie> = emptyList() // Etapa 5: series registradas en esta sesión
+    val registros: List<RegistroSerie> = emptyList(), // Etapa 5: series registradas en esta sesión
+    val ultimoPorEjercicio: Map<String, RegistroSerie> = emptyMap() // / Última serie registrada de cada ejercicio en el historial (para mostrar "Anterior: X kg × Y reps")
 ) {
     val ejercicioRutina: EjercicioRutina?
         get() = rutina?.ejercicios?.getOrNull(indiceEjercicio)
@@ -45,14 +46,30 @@ data class SesionUiState(
         get() = ejercicioRutina?.let { actual ->
             registros.lastOrNull { it.ejercicioId == actual.ejercicio.id }?.cargaKg
         }
+
+    val anterior: RegistroSerie?
+        get() = ejercicioRutina?.let { ultimoPorEjercicio[it.ejercicio.id] }
 }
 
 class SesionViewModel : ViewModel() {
 
     //Copia única: la Etapa 5 sobrescribe rutinaActual al guardar la sesión.
     private val _uiState = MutableStateFlow(
-        SesionUiState(rutina = RutinaRepository.rutinaActual.value)
+        SesionUiState(
+            rutina = RutinaRepository.rutinaActual.value,
+            ultimoPorEjercicio = ultimosRegistros()
+        )
     )
+
+    // El historial está en orden cronológico: las series más recientes sobrescriben a las anteriores
+    private fun ultimosRegistros(): Map<String, RegistroSerie> {
+        val resultado = mutableMapOf<String, RegistroSerie>()
+        HistorialRepository.sesiones.value.forEach { sesion ->
+            sesion.series.forEach { resultado[it.ejercicioId] = it }
+        }
+        return resultado
+    }
+
     val uiState: StateFlow<SesionUiState> = _uiState.asStateFlow()
 
     private var temporizador: Job? = null

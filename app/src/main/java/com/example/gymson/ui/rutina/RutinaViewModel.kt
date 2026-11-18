@@ -21,7 +21,11 @@ sealed interface RutinaUiState {
     data object SinPerfil : RutinaUiState
     data object Cargando : RutinaUiState
     data class Error(val mensaje: String) : RutinaUiState
-    data class Exito(val rutina: Rutina) : RutinaUiState
+    data class Exito(
+        val rutina: Rutina,
+        val numeroSesion: Int = 0,   // sesiones completadas hasta ahora
+        val diasPorSemana: Int = 3   // del perfil; con numeroSesion permite dibujar el ciclo
+    ) : RutinaUiState
 }
 
 class RutinaViewModel : ViewModel() {
@@ -50,8 +54,8 @@ class RutinaViewModel : ViewModel() {
                 EjerciciosRepository.obtenerEjercicios()
                     .onSuccess { catalogo ->
                         val rutina = generarRutina(perfil, catalogo, sesionesCompletadas)
-                        RutinaRepository.establecer(rutina) // la Etapa 4 la lee de aquí
-                        _uiState.value = RutinaUiState.Exito(rutina)
+                        RutinaRepository.establecer(rutina)
+                        _uiState.value = RutinaUiState.Exito(rutina, sesionesCompletadas, perfil.diasPorSemana)
                     }
                     .onFailure {
                         _uiState.value = RutinaUiState.Error(

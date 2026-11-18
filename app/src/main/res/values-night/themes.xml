@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Gymson" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/gymson_fondo</item>
+    </style>
+    <color name="gymson_fondo">#0F1A1C</color>
+</resources>
