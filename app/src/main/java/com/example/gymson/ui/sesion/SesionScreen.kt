@@ -68,24 +68,31 @@ import com.example.gymson.ui.components.BotonAzulMarino
 import com.example.gymson.ui.components.BotonPrincipal
 import com.example.gymson.ui.components.BotonSecundario
 import com.example.gymson.ui.components.BotonTerciario
-import com.example.gymson.ui.components.ImagenEjercicio
 import com.example.gymson.ui.components.RegistroSerieForm
 import com.example.gymson.ui.components.TarjetaGymson
 import com.example.gymson.ui.theme.EntrenamientoPersonalTheme
 import com.example.gymson.ui.util.musculoEs
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.example.gymson.data.model.SesionCompletada
+import com.example.gymson.ui.components.ImagenEjercicioAnimada
+import com.example.gymson.ui.historial.volumenKg
+import com.example.gymson.ui.util.urlsImagenes
+import kotlin.math.roundToInt
 
 // Versión con ViewModel (la que usa el NavGraph)
 @Composable
 fun SesionScreen(
     onTerminar: () -> Unit,
+    onVerHistorial: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SesionViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var mostrarSalir by rememberSaveable { mutableStateOf(false) }
 
-    // «Atrás» (y la ✕ del encabezado) piden confirmación mientras hay una sesión en curso
-    BackHandler(enabled = uiState.rutina != null) { mostrarSalir = true }
+    // Con el resumen visible la sesión ya está guardada: «Atrás» no debe decir "no se guardará"
+    BackHandler(enabled = uiState.rutina != null && uiState.resumen == null) { mostrarSalir = true }
 
     if (mostrarSalir) {
         AlertDialog(
@@ -100,13 +107,15 @@ fun SesionScreen(
             }
         )
     }
+
     SesionContent(
         uiState = uiState,
         onIniciarDescanso = viewModel::iniciarDescanso,
         onSaltarDescanso = viewModel::saltarDescanso,
         onRegistrar = viewModel::registrarSerie,
-        onAvanzar = { viewModel.avanzar(onTerminar) },
+        onAvanzar = viewModel::avanzar,
         onSalir = { mostrarSalir = true },
+        onVerHistorial = onVerHistorial,
         onVolver = onTerminar,
         modifier = modifier
     )
@@ -121,6 +130,7 @@ fun SesionContent(
     onRegistrar: (repeticiones: Int, cargaKg: Float) -> Unit,
     onAvanzar: () -> Unit,
     onSalir: () -> Unit,
+    onVerHistorial: () -> Unit,
     onVolver: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,6 +204,9 @@ fun SesionContent(
             onAvanzar = onAvanzar,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)
         )
+
+        // Resumen al terminar la sesión (RF06)
+        uiState.resumen?.let { ResumenSesionDialog(it, onVerHistorial, onVolver) }
     }
 }
 
@@ -275,9 +288,9 @@ private fun TarjetaEjercicioSesion(
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Box {
                 // Las imágenes de la API miden 850×567 (3:2)
-                ImagenEjercicio(
-                    url = ejercicio.urlImagen(),
-                    descripcion = ejercicio.name,
+                ImagenEjercicioAnimada(
+                    urls = ejercicio.urlsImagenes(),
+                    descripcion = uiState.es(ejercicio.name),
                     modifier = Modifier.fillMaxWidth().aspectRatio(3f / 2f)
                 )
                 if (musculo != null) {
@@ -294,7 +307,7 @@ private fun TarjetaEjercicioSesion(
                 }
             }
 
-            Text(ejercicio.name, style = MaterialTheme.typography.headlineSmall)
+            Text(uiState.es(ejercicio.name), style = MaterialTheme.typography.headlineSmall)
 
             Text(
                 text = "Serie ${uiState.serieActual} de ${item.series} · Objetivo ${item.repeticiones} $unidad",
@@ -337,7 +350,7 @@ private fun TarjetaEjercicioSesion(
             }
 
             Instrucciones(
-                pasos = ejercicio.instructions,
+                pasos = ejercicio.instructions.map { uiState.es(it) },
                 expandidas = expandidas,
                 onAlternar = { expandidas = !expandidas }
             )
@@ -391,7 +404,7 @@ private fun Instrucciones(
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Las instrucciones vienen en inglés de la API (se traducen en la fase 7.10)
+                // traducidas con ML Kit (TraductorRepository)
                 pasos.forEachIndexed { i, paso ->
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Box(
@@ -590,6 +603,114 @@ private fun BotonAvance(
     }
 }
 
+// ---------- Resumen de la sesión ----------
+
+// Diálogo: «Atrás» equivale a «Volver al inicio» (la sesión ya está guardada);
+// tocar fuera no lo cierra, para que no se pierda el resumen por accidente.
+@Composable
+private fun ResumenSesionDialog(
+    sesion: SesionCompletada,
+    onVerHistorial: () -> Unit,
+    onVolver: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onVolver,
+        properties = DialogProperties(dismissOnClickOutside = false)
+    ) {
+        ResumenSesionContenido(sesion, onVerHistorial, onVolver)
+    }
+}
+
+// Separado del Dialog para poder previsualizarlo
+@Composable
+private fun ResumenSesionContenido(
+    sesion: SesionCompletada,
+    onVerHistorial: () -> Unit,
+    onVolver: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val volumen = sesion.volumenKg()
+    TarjetaGymson(
+        modifier = modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CheckAnimado()
+            Text(
+                "¡Sesión completada!",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                sesion.nombreRutina,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                textAlign = TextAlign.Center
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DatoResumen(R.drawable.ic_timer, "${sesion.duracionMinutos} min", "Duración", Modifier.weight(1f))
+                DatoResumen(R.drawable.ic_check_circle, "${sesion.series.size}", "Series", Modifier.weight(1f))
+                // Con peso corporal la carga es 0: se muestra "—" en vez de "0 kg"
+                DatoResumen(
+                    R.drawable.ic_fitness_center,
+                    if (volumen == 0f) "—" else "${volumen.roundToInt()} kg",
+                    "Volumen",
+                    Modifier.weight(1f)
+                )
+            }
+            BotonSecundario(
+                texto = "Ver historial",
+                onClick = onVerHistorial,
+                modifier = Modifier.fillMaxWidth(),
+                icono = R.drawable.ic_history
+            )
+            BotonTerciario(
+                texto = "Volver al inicio",
+                onClick = onVolver,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun DatoResumen(
+    @androidx.annotation.DrawableRes icono: Int,
+    valor: String,
+    etiqueta: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Icon(
+            painter = painterResource(icono),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            valor,
+            style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            etiqueta,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 // ---------- Utilidades ----------
 
 private fun formatearTiempo(segundos: Int): String =
@@ -608,6 +729,24 @@ private fun textoSerie(r: RegistroSerie, unidad: String): String =
 
 private val registroDemo = RegistroSerie("Pushups", 1, 6, 0f)
 
+private val sesionResumenDemo = SesionCompletada(
+    fechaMillis = 0L,
+    nombreRutina = "Tren superior",
+    duracionMinutos = 38,
+    series = listOf(
+        RegistroSerie("Pushups", 1, 10, 20f),
+        RegistroSerie("Pushups", 2, 8, 20f)
+    )
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun ResumenSesionPreview() {
+    EntrenamientoPersonalTheme {
+        ResumenSesionContenido(sesionResumenDemo, onVerHistorial = {}, onVolver = {})
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun SesionReposoPreview() {
@@ -619,7 +758,7 @@ private fun SesionReposoPreview() {
                 ultimoPorEjercicio = mapOf("Pushups" to RegistroSerie("Pushups", 4, 8, 0f))
             ),
             onIniciarDescanso = {}, onSaltarDescanso = {}, onRegistrar = { _, _ -> },
-            onAvanzar = {}, onSalir = {}, onVolver = {}
+            onAvanzar = {}, onSalir = {}, onVerHistorial = {}, onVolver = {}
         )
     }
 }
@@ -631,7 +770,7 @@ private fun SesionDescansandoPreview() {
         SesionContent(
             uiState = SesionUiState(rutina = rutinaDemo, descansando = true, descansoRestante = 68),
             onIniciarDescanso = {}, onSaltarDescanso = {}, onRegistrar = { _, _ -> },
-            onAvanzar = {}, onSalir = {}, onVolver = {}
+            onAvanzar = {}, onSalir = {}, onVerHistorial = {}, onVolver = {}
         )
     }
 }
@@ -643,7 +782,7 @@ private fun SesionTerminadoOscuroPreview() {
         SesionContent(
             uiState = SesionUiState(rutina = rutinaDemo, descansoTerminado = true, serieActual = 2),
             onIniciarDescanso = {}, onSaltarDescanso = {}, onRegistrar = { _, _ -> },
-            onAvanzar = {}, onSalir = {}, onVolver = {}
+            onAvanzar = {}, onSalir = {}, onVerHistorial = {}, onVolver = {}
         )
     }
 }

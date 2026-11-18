@@ -25,6 +25,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.gymson.R
 import com.example.gymson.ui.theme.EntrenamientoPersonalTheme
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import com.example.gymson.data.FakeData.ejerciciosDemo
+import com.example.gymson.ui.util.urlsImagenes
+import kotlinx.coroutines.delay
 
 // Imagen de ejercicio con esquinas redondeadas, borde fino y estados de carga/error.
 // El tamaño lo define quien la usa (size, aspectRatio...). Coil hace el crossfade al cargar.
@@ -73,11 +80,95 @@ fun ImagenEjercicio(
     }
 }
 
+// Alterna entre los 2 cuadros de la API con un fundido, para mostrar el movimiento.
+// - Los dos AsyncImage están siempre compuestos (el segundo con alfa 0): así Coil
+//   precarga el cuadro 2 y no hay parpadeo cuando aparece.
+// - Si el ejercicio tiene 1 sola imagen, o el cuadro 2 falla, queda estática (igual que antes).
+@Composable
+fun ImagenEjercicioAnimada(
+    urls: List<String>,
+    descripcion: String,
+    modifier: Modifier = Modifier,
+    forma: Shape = MaterialTheme.shapes.medium,
+    contentScale: ContentScale = ContentScale.Crop,
+    intervaloMs: Long = 800L
+) {
+    val primera = urls.getOrNull(0)
+    val segunda = urls.getOrNull(1)
+
+    // Sin segundo cuadro no hay nada que animar: se reutiliza el componente estático
+    if (segunda == null) {
+        ImagenEjercicio(primera, descripcion, modifier, forma, contentScale)
+        return
+    }
+
+    // Se usan los textos de las URLs como claves (no la lista, que es nueva en cada recomposición)
+    var segundaLista by remember(segunda) { mutableStateOf(false) }
+    var segundaFalla by remember(segunda) { mutableStateOf(false) }
+    var verSegunda by remember(primera, segunda) { mutableStateOf(false) }
+
+    // Empieza a alternar solo cuando el cuadro 2 ya cargó. Se cancela solo al salir de la pantalla.
+    LaunchedEffect(segundaLista) {
+        if (segundaLista) {
+            while (true) {
+                delay(intervaloMs)
+                verSegunda = !verSegunda
+            }
+        }
+    }
+    val alfa by animateFloatAsState(
+        targetValue = if (verSegunda) 1f else 0f,
+        animationSpec = tween(durationMillis = 250),
+        label = "cuadroEjercicio"
+    )
+
+    val contexto = LocalContext.current
+    val peticion = remember(segunda) { ImageRequest.Builder(contexto).data(segunda).build() }
+    val colorBorde = MaterialTheme.colorScheme.outlineVariant
+
+    Box(modifier = modifier.clip(forma)) {
+        // Cuadro 1: el componente estático (con esqueleto de carga e ícono de error)
+        ImagenEjercicio(
+            url = primera,
+            descripcion = descripcion,
+            modifier = Modifier.fillMaxSize(),
+            forma = forma,
+            contentScale = contentScale
+        )
+        // Cuadro 2 encima, con alfa animado
+        if (!segundaFalla) {
+            AsyncImage(
+                model = peticion,
+                contentDescription = null,   // la descripción ya la lleva el cuadro 1
+                contentScale = contentScale,
+                modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = alfa },
+                onSuccess = { segundaLista = true },
+                onError = { segundaFalla = true }
+            )
+        }
+        // El borde de 1 dp se dibuja al final para que el cuadro 2 no lo tape
+        Box(Modifier.fillMaxSize().border(1.dp, colorBorde, forma))
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ImagenEjercicioPreview() {
     EntrenamientoPersonalTheme {
         // Sin red en el Preview se ve el estado de carga; con url = null, el de error
         ImagenEjercicio(url = null, descripcion = "Pushups", modifier = Modifier.size(88.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ImagenEjercicioAnimadaPreview() {
+    EntrenamientoPersonalTheme {
+        // Sin red en el Preview se ve el esqueleto; en el emulador se anima
+        ImagenEjercicioAnimada(
+            urls = ejerciciosDemo.first().urlsImagenes(),
+            descripcion = "Pushups",
+            modifier = Modifier.size(200.dp)
+        )
     }
 }

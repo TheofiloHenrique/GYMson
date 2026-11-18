@@ -57,4 +57,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.material:material-icons-core")
+    implementation("com.google.mlkit:translate:17.0.3")
 }

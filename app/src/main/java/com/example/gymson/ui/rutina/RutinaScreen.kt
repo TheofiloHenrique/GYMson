@@ -123,6 +123,7 @@ private fun RutinaLista(
             itemsIndexed(estado.rutina.ejercicios, key = { _, item -> item.ejercicio.id }) { indice, item ->
                 TarjetaEjercicioRutina(
                     item = item,
+                    nombre = estado.traducciones[item.ejercicio.name] ?: item.ejercicio.name,
                     posicion = indice + 1,
                     modifier = Modifier.aparecerEscalonado(indice + 1)
                 )
@@ -246,6 +247,7 @@ private fun DiaCiclo(numero: Int, estado: EstadoDia, modifier: Modifier = Modifi
 @Composable
 private fun TarjetaEjercicioRutina(
     item: EjercicioRutina,
+    nombre: String,
     posicion: Int,
     modifier: Modifier = Modifier
 ) {
@@ -279,7 +281,7 @@ private fun TarjetaEjercicioRutina(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (musculo != null) EtiquetaMusculo(musculo)
                 Text(
-                    text = item.ejercicio.name,
+                    text = nombre,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

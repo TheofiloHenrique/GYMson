@@ -8,6 +8,7 @@ import com.example.gymson.data.model.Rutina
 import com.example.gymson.data.model.SesionCompletada
 import com.example.gymson.data.repository.HistorialRepository
 import com.example.gymson.data.repository.RutinaRepository
+import com.example.gymson.data.repository.TraductorRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,9 @@ data class SesionUiState(
     val descansando: Boolean = false,
     val descansoTerminado: Boolean = false,
     val registros: List<RegistroSerie> = emptyList(), // Etapa 5: series registradas en esta sesión
-    val ultimoPorEjercicio: Map<String, RegistroSerie> = emptyMap() // / Última serie registrada de cada ejercicio en el historial (para mostrar "Anterior: X kg × Y reps")
+    val ultimoPorEjercicio: Map<String, RegistroSerie> = emptyMap(), // / Última serie registrada de cada ejercicio en el historial (para mostrar "Anterior: X kg × Y reps")
+    val traducciones: Map<String, String> = emptyMap(), // original -> español
+    val resumen: SesionCompletada? = null, // RF06: se llena al terminar; la pantalla lo muestra en un diálogo
 ) {
     val ejercicioRutina: EjercicioRutina?
         get() = rutina?.ejercicios?.getOrNull(indiceEjercicio)
@@ -49,6 +52,8 @@ data class SesionUiState(
 
     val anterior: RegistroSerie?
         get() = ejercicioRutina?.let { ultimoPorEjercicio[it.ejercicio.id] }
+
+    fun es(texto: String): String = traducciones[texto] ?: texto
 }
 
 class SesionViewModel : ViewModel() {
@@ -79,6 +84,20 @@ class SesionViewModel : ViewModel() {
 
     // Evita guardar la sesión dos veces si se pulsa «Terminar sesión» dos veces seguidas
     private var sesionGuardada = false
+
+    init { traducirRutina() }
+
+    // Normalmente ya está en caché (lo hizo RutinaViewModel): este paso es instantáneo.
+    // Si no, se traduce aquí sin bloquear la pantalla.
+    private fun traducirRutina() {
+        val ejercicios = _uiState.value.rutina?.ejercicios?.map { it.ejercicio } ?: return
+        viewModelScope.launch {
+            ejercicios.forEach { e ->                       // ejercicio por ejercicio: el primero llega antes
+                val nuevos = TraductorRepository.traducirTextos(listOf(e.name) + e.instructions)
+                _uiState.update { it.copy(traducciones = it.traducciones + nuevos) }
+            }
+        }
+    }
 
     fun iniciarDescanso() {
         val segundos = _uiState.value.ejercicioRutina?.descansoSegundos ?: return
@@ -118,7 +137,7 @@ class SesionViewModel : ViewModel() {
     }
 
     /** Avanza a la siguiente serie, al siguiente ejercicio o termina la sesión. */
-    fun avanzar(onTerminar: () -> Unit) {
+    fun avanzar() {
         val estado = _uiState.value
         detenerDescanso()
         when {
@@ -126,27 +145,27 @@ class SesionViewModel : ViewModel() {
                 _uiState.update { it.copy(serieActual = it.serieActual + 1) }
             !estado.esUltimoEjercicio ->
                 _uiState.update { it.copy(indiceEjercicio = it.indiceEjercicio + 1, serieActual = 1) }
-            else -> terminarSesion(estado, onTerminar)
+            else -> terminarSesion(estado)
         }
     }
 
-    // RF06: arma la SesionCompletada y la guarda en el historial.
-    // Se llama JUSTO ANTES de salir de la pantalla: al agregar al historial, RutinaViewModel
-    // regenera la rutina del siguiente día y sobrescribe rutinaActual; esta pantalla ya no la necesita.
-    private fun terminarSesion(estado: SesionUiState, onTerminar: () -> Unit) {
+    // RF06: arma la SesionCompletada, la guarda en el historial y la deja en el estado
+    // para que la pantalla muestre el resumen. Ya NO sale de la pantalla: sale el usuario desde el diálogo.
+    private fun terminarSesion(estado: SesionUiState) {
         if (sesionGuardada) return
         sesionGuardada = true
 
         val ahora = System.currentTimeMillis()
-        HistorialRepository.agregar(
-            SesionCompletada(
-                fechaMillis = ahora,
-                nombreRutina = estado.rutina?.nombre ?: "Sesión",
-                duracionMinutos = ((ahora - inicioMillis) / 60_000).toInt().coerceAtLeast(1),
-                series = estado.registros
-            )
+        val sesion = SesionCompletada(
+            fechaMillis = ahora,
+            nombreRutina = estado.rutina?.nombre ?: "Sesión",
+            duracionMinutos = ((ahora - inicioMillis) / 60_000).toInt().coerceAtLeast(1),
+            series = estado.registros
         )
-        onTerminar()
+        // El resumen usa ESTA sesión, no rutinaActual: al llamar agregar(...), RutinaViewModel
+        // regenera la rutina del siguiente día y sobrescribe rutinaActual.
+        _uiState.update { it.copy(resumen = sesion) }
+        HistorialRepository.agregar(sesion)
     }
 
     private fun detenerDescanso() {
