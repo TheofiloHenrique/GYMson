@@ -33,7 +33,14 @@ fun NavGraph(
             )
         }
         composable(Rutas.SESION) {
-            SesionScreen(onTerminar = { navController.popBackStack() })
+            SesionScreen(
+                onTerminar = { navController.popBackStack() },
+                onVerHistorial = {
+                    // Primero se sale de la sesión y luego se va al historial por la barra
+                    navController.popBackStack()
+                    navController.navegarEnBarra(Rutas.HISTORIAL)
+                }
+            )
         }
         composable(Rutas.HISTORIAL) { HistorialScreen() }
         composable(Rutas.CATALOGO) { CatalogoScreen() }

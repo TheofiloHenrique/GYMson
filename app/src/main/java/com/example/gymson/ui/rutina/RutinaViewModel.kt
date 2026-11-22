@@ -7,6 +7,7 @@ import com.example.gymson.data.repository.EjerciciosRepository
 import com.example.gymson.data.repository.HistorialRepository
 import com.example.gymson.data.repository.PerfilRepository
 import com.example.gymson.data.repository.RutinaRepository
+import com.example.gymson.data.repository.TraductorRepository
 import com.example.gymson.domain.generarRutina
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ sealed interface RutinaUiState {
     data class Exito(
         val rutina: Rutina,
         val numeroSesion: Int = 0,   // sesiones completadas hasta ahora
-        val diasPorSemana: Int = 3   // del perfil; con numeroSesion permite dibujar el ciclo
+        val diasPorSemana: Int = 3,   // del perfil; con numeroSesion permite dibujar el ciclo
+        val traducciones: Map<String, String> = emptyMap()   // original -> español
     ) : RutinaUiState
 }
 
@@ -55,7 +57,12 @@ class RutinaViewModel : ViewModel() {
                     .onSuccess { catalogo ->
                         val rutina = generarRutina(perfil, catalogo, sesionesCompletadas)
                         RutinaRepository.establecer(rutina)
+                        // 1) se muestra ya, en inglés
                         _uiState.value = RutinaUiState.Exito(rutina, sesionesCompletadas, perfil.diasPorSemana)
+                        // 2) se traduce (nombres + instrucciones) y se actualiza la pantalla
+                        val textos = rutina.ejercicios.flatMap { listOf(it.ejercicio.name) + it.ejercicio.instructions }
+                        val traducciones = TraductorRepository.traducirTextos(textos)
+                        _uiState.value = RutinaUiState.Exito(rutina, sesionesCompletadas, perfil.diasPorSemana, traducciones)
                     }
                     .onFailure {
                         _uiState.value = RutinaUiState.Error(

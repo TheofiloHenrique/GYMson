@@ -85,6 +85,16 @@ object FakeData {
                 RegistroSerie("Bodyweight_Squat", 1, 15, 0f),
                 RegistroSerie("Bodyweight_Squat", 2, 12, 0f)
             )
+        ),
+        SesionCompletada(
+            fechaMillis = 1_730_200_000_000L,
+            nombreRutina = "Cuerpo completo",
+            duracionMinutos = 45,
+            series = listOf(
+                RegistroSerie("Barbell_Squat", 1, 6, 40f),
+                RegistroSerie("Barbell_Squat", 2, 6, 42.5f)
+            )
         )
+
     )
 }

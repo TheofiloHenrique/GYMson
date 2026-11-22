@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.example.gymson.data.FakeData.ejerciciosDemo
 import com.example.gymson.data.model.Ejercicio
 import com.example.gymson.ui.theme.EntrenamientoPersonalTheme
+import com.example.gymson.ui.util.equipoEs
+import com.example.gymson.ui.util.nivelEs
 
 // Los textos (nombre, nivel, equipo) siguen en inglés hasta la fase de traducción (7.10).
 @Composable
@@ -43,13 +45,13 @@ fun TarjetaEjercicio(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "Nivel: ${ejercicio.level}",
+                    text = "Nivel: ${nivelEs(ejercicio.level)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 // equipment puede ser null en el JSON
                 Text(
-                    text = "Equipo: ${ejercicio.equipment ?: "ninguno"}",
+                    text = "Equipo: ${equipoEs(ejercicio.equipment)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
